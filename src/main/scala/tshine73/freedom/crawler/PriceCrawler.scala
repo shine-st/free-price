@@ -12,7 +12,7 @@ import scala.language.implicitConversions
 object PriceCrawler:
   private val yahooApi = "https://query1.finance.yahoo.com/v8/finance/chart/%s?period1=%d&period2=%d&interval=1d&events=history"
 
-  def fetchPrice(code: String, date: DateTime) =
+  def fetchPrice(code: String, date: DateTime): Double =
     val dateStr = date.toString(DateUtils.dateFormat)
     val backend = HttpClientSyncBackend()
     val start = DateUtils.dateToTimestamp(date)
