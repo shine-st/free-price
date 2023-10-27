@@ -9,9 +9,9 @@ import scala.util.Try
 //import scala.annotation.MainAnnotation.Parameter
 
 val tableName = "price"
-
+val assetSpreadsheetId = "1H1-OcOoDI9CRkOit1RoOaAE5WJ_HVVOT7jP7fMG50mU"
 @main
-def main(parameters: String*): Unit = {
+def main(parameters: String*): Unit =
   //  fetchPrices(date)
   val date = parameters match
     case head :: _ => DateUtils.parseDate(head)
@@ -33,13 +33,11 @@ def main(parameters: String*): Unit = {
     writeSheet(priceEntity)
   })
 
-}
-
 
 def save(priceEntity: PriceEntity) = {
   DynamoDBUtils.putItem(PriceEntity.generateDynamodbItem(priceEntity), PriceEntity.tableName)
 }
 
 def writeSheet(priceEntity: PriceEntity) = {
-  GoogleSheetUtils.updateValue(priceEntity.range, priceEntity.price)
+  GoogleSheetUtils.updateValue(assetSpreadsheetId, priceEntity.range, priceEntity.price)
 }

@@ -10,11 +10,11 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonFactory
 import com.google.api.client.json.gson.GsonFactory
 import com.google.api.client.util.store.FileDataStoreFactory
+import com.google.api.services.sheets.v4.model.*
 import com.google.api.services.sheets.v4.{Sheets, SheetsScopes}
-import com.google.api.services.sheets.v4.model.{FindReplaceRequest, Request, Sheet, Spreadsheet, SpreadsheetProperties, UpdateSpreadsheetPropertiesRequest, UpdateValuesResponse, ValueRange}
 import com.sun.org.apache.xpath.internal.operations.Plus
 
-import java.io.{FileInputStream, FileNotFoundException, IOException, InputStream, InputStreamReader}
+import java.io.*
 import java.security.GeneralSecurityException
 import java.util
 import java.util.Collections
@@ -25,8 +25,6 @@ object GoogleSheetUtils {
   private val APPLICATION_NAME = "Google Sheets API"
   private val JSON_FACTORY = GsonFactory.getDefaultInstance
   private val TOKENS_DIRECTORY_PATH = "tokens"
-  private val spreadsheetId = "1H1-OcOoDI9CRkOit1RoOaAE5WJ_HVVOT7jP7fMG50mU"
-
 
   private val SCOPES = List(SheetsScopes.SPREADSHEETS).asJava
   private val CREDENTIALS_FILE_PATH = "/credentials.json"
@@ -60,7 +58,7 @@ object GoogleSheetUtils {
   }
 
 
-  def getValues(range: String) = {
+  def getValues(spreadsheetId: String, range: String) = {
     var result: ValueRange = null
 
     try {
@@ -84,7 +82,7 @@ object GoogleSheetUtils {
     result
   }
 
-  def updateValue(range: String, value: AnyVal) = {
+  def updateValue(spreadsheetId: String, range: String, value: AnyVal) = {
     var result: UpdateValuesResponse = null
     try {
       // Updates the values in the specified range.
@@ -97,14 +95,14 @@ object GoogleSheetUtils {
       println(f"${result.getUpdatedCells()} cells updated.")
     } catch {
       case e: GoogleJsonResponseException =>
-          throw e
+        throw e
     }
 
     result
   }
 
 
-  def deleteValue(range: String) = {
+  def deleteValue(spreadsheetId: String, range: String) = {
     var result: UpdateValuesResponse = null
     try {
       // Updates the values in the specified range.
@@ -118,7 +116,7 @@ object GoogleSheetUtils {
       println(f"${result.getUpdatedCells()} cell deleted.")
     } catch {
       case e: GoogleJsonResponseException =>
-          throw e
+        throw e
     }
 
     result
