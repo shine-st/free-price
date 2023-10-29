@@ -26,6 +26,7 @@ object Location:
     case "大潤發" => RtMart
 
 case class ProductPriceEntity(
+                             id:String,
                                date: DateTime,
                                item: String,
                                price: Double,
@@ -35,18 +36,20 @@ case class ProductPriceEntity(
                                category: String,
                                promotion: Boolean = false,
                                capacity: Option[Int] = None,
-                               brand: Option[String] = None
+                               brand: Option[String] = None,
+                               staticValue: String = "1"
                              ):
   override def toString: String =
-    f"date [$date], item [$item], price [$price]"
+    f"id[$id], date [$date], item [$item], price [$price]"
 
 
 object ProductPriceEntity:
-  val tableName = "Product-Price"
+  val tableName = "product-price"
 
   def generateDynamodbItem(entity: ProductPriceEntity) =
     val itemValues = collection.mutable.Map.empty[String, AttributeValue]
 
+    itemValues.put("id", AttributeValue.builder().s(entity.id).build())
     itemValues.put("date", AttributeValue.builder().s(entity.date.toString(DateUtils.dateFormat)).build())
     itemValues.put("item", AttributeValue.builder().s(entity.item).build())
     itemValues.put("price", AttributeValue.builder().n(entity.price.toString).build())
@@ -59,6 +62,8 @@ object ProductPriceEntity:
 
     if entity.capacity.nonEmpty then
       itemValues.put("capacity", AttributeValue.builder().n(entity.capacity.map(_.toString).getOrElse("")).build())
+
+    itemValues.put("static-value", AttributeValue.builder().s(entity.staticValue).build())
 
     itemValues.toMap
 

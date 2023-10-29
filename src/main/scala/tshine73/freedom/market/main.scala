@@ -12,5 +12,5 @@ def main(parameters: String*): Unit =
   //  println(GoogleSheetUtils.getValues(priceSheetId, "ProductPrice!A2:J20"))
 
 
-  val entity = ProductPriceEntity(DateTime.now(), "onion", 32.2, 1, Units("PIECE"), Location("Costco"), "Ingredient")
-  DynamoDBUtils.putItem(ProductPriceEntity.generateDynamodbItem(entity), ProductPriceEntity.tableName)
+//  val entity = ProductPriceEntity("", DateTime.now(), "onion", 32.2, 1, Units("PIECE"), Location("Costco"), "Ingredient")
+//  DynamoDBUtils.putItem(ProductPriceEntity.generateDynamodbItem(entity), ProductPriceEntity.tableName)

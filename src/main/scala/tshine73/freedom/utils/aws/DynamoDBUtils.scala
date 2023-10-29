@@ -1,16 +1,23 @@
 package tshine73.freedom.utils.aws
 
 import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.dynamodb.model.{AttributeValue, DeleteItemRequest, DynamoDbException, GetItemRequest, PutItemRequest, PutItemResponse, ResourceNotFoundException}
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.dynamodb.model.*
 
 import scala.jdk.CollectionConverters.*
+import scala.util.Try
 
 object DynamoDBUtils {
-  val ddb = DynamoDbClient.builder()
+  private val ddb: DynamoDbClient = DynamoDbClient.builder()
     .build()
 
-  def putItem(item: Map[String, AttributeValue], tableName: String) = {
+
+  //  def sendRequest(request: DynamoDbRequest, action: DynamoDbClient => DynamoDbResponse): Either[Throwable, DynamoDbResponse] =
+  //    Try(action(ddb)).toEither
+
+  //  def extractResponse()
+
+  def putItem(item: Map[String, AttributeValue], tableName: String) =
     val request = PutItemRequest.builder()
       .tableName(tableName)
       .item(item.asJava)
@@ -33,7 +40,6 @@ object DynamoDBUtils {
     }
 
     statusCode == 200
-  }
 
   def getItem(keyMap: Map[String, AttributeValue], tableName: String): Map[String, AttributeValue] = {
     val request = GetItemRequest.builder()
@@ -74,4 +80,34 @@ object DynamoDBUtils {
 
     statusCode == 200
   }
+
+  def getMaximumValue(table: String, index: String, column: String, staticValueMap: Map[String, String]): Map[String, AttributeValue] =
+    val keyConditionExpression = f"#staticValue = :v_static"
+    val expressionAttributeNames = Map("#staticValue" -> staticValueMap.keys.head).asJava
+    val expressionAttributeValues = Map(":v_static" -> AttributeValue.builder().s(staticValueMap.values.head).build())
+      .asJava
+
+    var itemMap: Map[String, AttributeValue] = Map.empty
+
+    try {
+      val request = QueryRequest.builder()
+        .tableName(table)
+        .indexName(index)
+        .keyConditionExpression(keyConditionExpression)
+        .expressionAttributeNames(expressionAttributeNames)
+        .expressionAttributeValues(expressionAttributeValues)
+        .projectionExpression(column)
+        .scanIndexForward(false)
+        .limit(1)
+        .build()
+
+      val response = ddb.query(request)
+      itemMap = response.items().asScala.head.asScala.toMap
+    }
+    catch {
+      case e: DynamoDbException =>
+        println(e.getMessage)
+    }
+
+    itemMap
 }
