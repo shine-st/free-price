@@ -4,6 +4,7 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import software.amazon.awssdk.services.dynamodb.model.*
 
+import java.util.NoSuchElementException
 import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
@@ -41,7 +42,7 @@ object DynamoDBUtils {
 
     statusCode == 200
 
-  def getItem(keyMap: Map[String, AttributeValue], tableName: String): Map[String, AttributeValue] = {
+  def getItemByKey(keyMap: Map[String, AttributeValue], tableName: String): Map[String, AttributeValue] = {
     val request = GetItemRequest.builder()
       .key(keyMap.asJava)
       .tableName(tableName)
@@ -106,7 +107,9 @@ object DynamoDBUtils {
     }
     catch {
       case e: DynamoDbException =>
-        println(e.getMessage)
+        throw e
+      case e: NoSuchElementException =>
+        e.printStackTrace()
     }
 
     itemMap

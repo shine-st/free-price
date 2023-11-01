@@ -1,8 +1,12 @@
 package tshine73.freedom.core
 
+import com.google.api.services.sheets.v4.model.ValueRange
 import org.joda.time.DateTime
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
 import tshine73.freedom.utils.DateUtils
+
+import scala.jdk.CollectionConverters.*
+import scala.util.Try
 
 
 enum Units:
@@ -26,7 +30,7 @@ object Location:
     case "大潤發" => RtMart
 
 case class ProductPriceEntity(
-                             id:String,
+                               id: String,
                                date: DateTime,
                                item: String,
                                price: Double,
@@ -35,9 +39,9 @@ case class ProductPriceEntity(
                                location: Location,
                                category: String,
                                promotion: Boolean = false,
-                               capacity: Option[Int] = None,
+                               capacity: Option[Double] = None,
                                brand: Option[String] = None,
-                               staticValue: String = "1"
+                               staticValue: String = ProductPriceEntity.staticValueMap("static-value")
                              ):
   override def toString: String =
     f"id[$id], date [$date], item [$item], price [$price]"
@@ -45,6 +49,9 @@ case class ProductPriceEntity(
 
 object ProductPriceEntity:
   val tableName = "product-price"
+  val staticValueMap = Map("static-value" -> "1")
+  val primaryIdIndexName = "static-value-id-index"
+  val primaryIdColumnName = "id"
 
   def generateDynamodbItem(entity: ProductPriceEntity) =
     val itemValues = collection.mutable.Map.empty[String, AttributeValue]
@@ -58,12 +65,44 @@ object ProductPriceEntity:
     itemValues.put("location", AttributeValue.builder().s(entity.location.name).build())
     itemValues.put("category", AttributeValue.builder().s(entity.category).build())
     itemValues.put("promotion", AttributeValue.builder().bool(entity.promotion).build())
-    itemValues.put("brand", AttributeValue.builder().s(entity.brand.getOrElse("")).build())
 
     if entity.capacity.nonEmpty then
       itemValues.put("capacity", AttributeValue.builder().n(entity.capacity.map(_.toString).getOrElse("")).build())
+
+    if entity.brand.isDefined then
+      itemValues.put("brand", AttributeValue.builder().s(entity.brand.get).build())
 
     itemValues.put("static-value", AttributeValue.builder().s(entity.staticValue).build())
 
     itemValues.toMap
 
+  def parseGoogleSheetData(head: List[String], data: List[List[String]]) =
+    val headMap = head.zipWithIndex.toMap
+    data.map(values =>
+      Try {
+        val capacity = headMap.get("capacity")
+          .map(values(_))
+          .filter(_ != "")
+          .map(_.toDouble)
+
+        val brand = headMap.get("brand")
+          .filter(i => i < values.size)
+          .map(values(_))
+
+
+        ProductPriceEntity(
+          "",
+          DateUtils.parseDate(values(headMap("date"))),
+          values(headMap("item")),
+          values(headMap("price")).toDouble,
+          values(headMap("count")).toInt,
+          Units(values(headMap("units of measurement"))),
+          Location(values(headMap("location"))),
+          values(headMap("category")),
+          values(headMap("promotion")).toBoolean,
+          capacity,
+          brand,
+          staticValueMap("static-value")
+        )
+      }.toEither
+    )

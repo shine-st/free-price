@@ -26,9 +26,9 @@ class DynamoDBTest extends AnyFunSuite {
     deleteItem(priceEntityKeyMap, PriceEntity.tableName)
   }
 
-  test("get by primary key") {
+  test("get item by primary key") {
     putItem(PriceEntity.generateDynamodbItem(priceEntity), PriceEntity.tableName)
-    val item = DynamoDBUtils.getItem(priceEntityKeyMap, PriceEntity.tableName)
+    val item = DynamoDBUtils.getItemByKey(priceEntityKeyMap, PriceEntity.tableName)
 
     assert(priceEntity.price.toString == item("price").n())
     deleteItem(priceEntityKeyMap, PriceEntity.tableName)
@@ -42,9 +42,8 @@ class DynamoDBTest extends AnyFunSuite {
   test("get maximum value from table") {
     putItem(ProductPriceEntity.generateDynamodbItem(productPriceEntity), ProductPriceEntity.tableName)
     putItem(ProductPriceEntity.generateDynamodbItem(productPriceEntity.copy(id = "1234")), ProductPriceEntity.tableName)
-    val maximumValue = getMaximumValue(ProductPriceEntity.tableName, "static-value-id-index", "id", Map("static-value" -> "1"))
-      .values.head.s()
-    assert(Int.MaxValue.toString == maximumValue)
+    val maximumValue = getMaximumValue(ProductPriceEntity.tableName, ProductPriceEntity.primaryIdIndexName, ProductPriceEntity.primaryIdColumnName, ProductPriceEntity.staticValueMap)(ProductPriceEntity.primaryIdColumnName).s()
+    assert(maximumValue == Int.MaxValue.toString)
     deleteItem(productPriceEntityKeyMap, ProductPriceEntity.tableName)
     deleteItem(Map("id" -> AttributeValue.builder().s("1234").build()), ProductPriceEntity.tableName)
   }
