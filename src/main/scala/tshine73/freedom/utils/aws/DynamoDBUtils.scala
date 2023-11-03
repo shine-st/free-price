@@ -61,7 +61,35 @@ object DynamoDBUtils {
     itemMap
   }
 
-  def deleteItem(keyMap: Map[String, AttributeValue], tableName: String) = {
+  def getItemsByIndex(keyMap: Map[String, AttributeValue], tableName: String, indexName: String): List[Map[String, AttributeValue]] =
+    val keyConditionExpression = f"#key = :v_key"
+    val expressionAttributeNames = Map("#key" -> keyMap.keys.head).asJava
+    val expressionAttributeValues = Map(":v_key" -> keyMap.values.head).asJava
+
+    var items: List[Map[String, AttributeValue]] = List.empty
+
+    try {
+      val request = QueryRequest.builder()
+        .tableName(tableName)
+        .indexName(indexName)
+        .keyConditionExpression(keyConditionExpression)
+        .expressionAttributeNames(expressionAttributeNames)
+        .expressionAttributeValues(expressionAttributeValues)
+        .build()
+
+      val response = ddb.query(request)
+      items = response.items().asScala.toList.map(_.asScala.toMap)
+    }
+    catch {
+      case e: DynamoDbException =>
+        throw e
+      case e: NoSuchElementException =>
+        e.printStackTrace()
+    }
+
+    items
+
+  def deleteItemByKey(keyMap: Map[String, AttributeValue], tableName: String) = {
     val deleteReq = DeleteItemRequest.builder()
       .tableName(tableName)
       .key(keyMap.asJava)
@@ -82,11 +110,38 @@ object DynamoDBUtils {
     statusCode == 200
   }
 
+  def deleteItemByIndexKey(keyMap: Map[String, AttributeValue], tableName: String, indexName: String) = {
+    val items = getItemsByIndex(keyMap, tableName, indexName)
+
+    val describeTableRequest = DescribeTableRequest.builder()
+      .tableName(tableName)
+      .build()
+
+    val tableInform = ddb.describeTable(describeTableRequest).table()
+    val primaryKeyName = tableInform.keySchema().asScala.filter(_.keyType() == KeyType.HASH).head.attributeName()
+
+    var statusCode: Int = 0
+
+    try {
+      for
+        item <- items
+      do
+        deleteItemByKey(Map(primaryKeyName -> item(primaryKeyName)), tableName)
+
+      statusCode = 200
+    }
+    catch {
+      case e: DynamoDbException =>
+        println(e.getMessage)
+    }
+
+    statusCode == 200
+  }
+
   def getMaximumValue(table: String, index: String, column: String, staticValueMap: Map[String, String]): Map[String, AttributeValue] =
     val keyConditionExpression = f"#staticValue = :v_static"
     val expressionAttributeNames = Map("#staticValue" -> staticValueMap.keys.head).asJava
-    val expressionAttributeValues = Map(":v_static" -> AttributeValue.builder().s(staticValueMap.values.head).build())
-      .asJava
+    val expressionAttributeValues = Map(":v_static" -> AttributeValue.builder().s(staticValueMap.values.head).build()).asJava
 
     var itemMap: Map[String, AttributeValue] = Map.empty
 

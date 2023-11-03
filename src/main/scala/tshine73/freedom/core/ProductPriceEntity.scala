@@ -30,7 +30,7 @@ object Location:
     case "大潤發" => RtMart
 
 case class ProductPriceEntity(
-                               id: String,
+                               id: Int,
                                date: DateTime,
                                item: String,
                                price: Double,
@@ -52,11 +52,12 @@ object ProductPriceEntity:
   val staticValueMap = Map("static-value" -> "1")
   val primaryIdIndexName = "static-value-id-index"
   val primaryIdColumnName = "id"
+  val dateIndexName = "date-index"
 
   def generateDynamodbItem(entity: ProductPriceEntity) =
     val itemValues = collection.mutable.Map.empty[String, AttributeValue]
 
-    itemValues.put("id", AttributeValue.builder().s(entity.id).build())
+    itemValues.put("id", AttributeValue.builder().n(entity.id.toString).build())
     itemValues.put("date", AttributeValue.builder().s(entity.date.toString(DateUtils.dateFormat)).build())
     itemValues.put("item", AttributeValue.builder().s(entity.item).build())
     itemValues.put("price", AttributeValue.builder().n(entity.price.toString).build())
@@ -91,7 +92,7 @@ object ProductPriceEntity:
 
 
         ProductPriceEntity(
-          "",
+          -1,
           DateUtils.parseDate(values(headMap("date"))),
           values(headMap("item")),
           values(headMap("price")).toDouble,

@@ -20,10 +20,10 @@ class CoreTest extends AnyFunSuite {
   }
 
   test("generate product price dynamodb items") {
-    val productPriceEntity = ProductPriceEntity(Int.MaxValue.toString, DateUtils.parseDate("1988-03-12"), "item", 22.0, 0, Units.KG, Location.Costco, "c1", capacity = Some(300))
+    val productPriceEntity = ProductPriceEntity(Int.MaxValue, DateUtils.parseDate("1988-03-12"), "item", 22.0, 0, Units.KG, Location.Costco, "c1", capacity = Some(300))
     val itemMap = ProductPriceEntity.generateDynamodbItem(productPriceEntity)
 
-    assert(productPriceEntity.id == itemMap("id").s)
+    assert(productPriceEntity.id == itemMap("id").n.toInt)
     assert(productPriceEntity.date.toString(DateUtils.dateFormat) == itemMap("date").s)
     assert(productPriceEntity.item == itemMap("item").s)
     assert(productPriceEntity.price == itemMap("price").n.toDouble)
