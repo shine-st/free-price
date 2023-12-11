@@ -1,6 +1,6 @@
 import org.joda.time.DateTime
 import tshine73.freedom.core.PriceEntity
-import tshine73.freedom.crawler.PriceCrawler
+import tshine73.freedom.crawler.FinancialCrawler
 import tshine73.freedom.utils.aws.DynamoDBUtils
 import tshine73.freedom.utils.{DateUtils, GoogleSheetUtils, IOUtils}
 
@@ -22,7 +22,7 @@ def main(parameters: String*): Unit =
     .map(_.split(","))
     .map(codeInfoArr =>
       val code = codeInfoArr(0)
-      val priceEither = Try(PriceCrawler.fetchPrice(code, date)).toEither
+      val priceEither = Try(FinancialCrawler.fetchPrice(code, date)).toEither
       val priceEntity = PriceEntity(code, date, priceEither.getOrElse(-1), codeInfoArr(1))
       println(priceEntity)
       priceEntity

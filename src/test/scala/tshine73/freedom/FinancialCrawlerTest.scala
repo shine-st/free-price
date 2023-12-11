@@ -3,14 +3,14 @@ package tshine73.freedom
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should
-import tshine73.freedom.crawler.PriceCrawler
+import tshine73.freedom.crawler.FinancialCrawler
 import tshine73.freedom.utils.DateUtils.*
 
-class CrawlerTest extends AnyFunSuite {
+class FinancialCrawlerTest extends AnyFunSuite {
 
   test("crawl TSMC price on 2022-11-01") {
     val date = parseDate("2022-11-01")
-    assert(391.5 == PriceCrawler.fetchPrice("2330.TW", date))
+    assert(391.5 == FinancialCrawler.fetchPrice("2330.TW", date))
   }
 
   test("parse yahoo api response") {
@@ -28,8 +28,13 @@ class CrawlerTest extends AnyFunSuite {
         |    390.62591552734375]}]}}],"error":null}}
         |""".stripMargin
 
-    val pricesMap = PriceCrawler.parseYahooJson(json)
+    val pricesMap = FinancialCrawler.parseYahooJson(json)
     assert(391.5 == pricesMap("2022-11-01"))
     assert(395 == pricesMap("2022-11-02"))
+  }
+
+  test("crawl ^TWII index on 2022-11-01") {
+    val date = parseDate("2022-11-01")
+    assert(13037.2099609375 == FinancialCrawler.fetchIndex("^TWII", date))
   }
 }
