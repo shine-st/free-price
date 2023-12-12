@@ -1,4 +1,4 @@
-package tshine73.freedom.core
+package tshine73.freedom.market.entity
 
 import com.google.api.services.sheets.v4.model.ValueRange
 import org.joda.time.DateTime

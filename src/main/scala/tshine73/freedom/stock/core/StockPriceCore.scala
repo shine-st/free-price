@@ -1,16 +1,18 @@
-package tshine73.freedom.crawler
+package tshine73.freedom.stock.core
 
-import sttp.client3.*
-import tshine73.freedom.utils.DateUtils
 import little.json.*
 import little.json.Implicits.{*, given}
 import org.joda.time.DateTime
+import sttp.client3.*
+import tshine73.freedom.utils.{DateUtils, GoogleSheetUtils}
 
+import scala.jdk.CollectionConverters.*
 import scala.language.implicitConversions
 
 
-object FinancialCrawler:
+object StockPriceCore:
   private val yahooApi = "https://query1.finance.yahoo.com/v8/finance/chart/%s?period1=%d&period2=%d&interval=1d&events=history"
+  val assetSpreadsheetId = "1H1-OcOoDI9CRkOit1RoOaAE5WJ_HVVOT7jP7fMG50mU"
 
   def fetchPrice(code: String, date: DateTime): Double =
     val dateStr = date.toString(DateUtils.dateFormat)
@@ -43,3 +45,14 @@ object FinancialCrawler:
     timestamps.map(timestamp => DateUtils.timestampToDate(timestamp).toString(DateUtils.dateFormat))
       .zip(prices)
       .toMap
+
+  def prepareStockCode() =
+    val rangeValues = GoogleSheetUtils.getValues(assetSpreadsheetId, "Price!A2:A")
+      .getValues.asScala.map(_.asScala)
+
+    rangeValues.zip(2 to rangeValues.size + 1)
+      .map((value, index) => (value.head.toString, "C" + index))
+
+
+
+

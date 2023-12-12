@@ -4,7 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
-import tshine73.freedom.crawler.FinancialCrawler
+import tshine73.freedom.stock.core.StockPriceCore
 import tshine73.freedom.utils.DateUtils.*
 import tshine73.freedom.utils.GoogleSheetUtils.*
 import tshine73.freedom.utils.aws.DynamoDBUtils
@@ -21,6 +21,10 @@ class GoogleSheetTest extends AnyFunSuite {
     assert(getValues(assetSpreadsheetId, "History Performance!X1").getValues().get(0).asScala.head.toString == "12345")
     deleteValue(assetSpreadsheetId, "History Performance!X1")
     assert(getValues(assetSpreadsheetId, "History Performance!X1").getValues == null)
+  }
+
+  test("read column data") {
+    assert(getValues(assetSpreadsheetId, "US Portfolio Detail!A2:A9").getValues().asScala.flatMap(_.asScala).toSet == Set("個股", "ETF"))
   }
 
 

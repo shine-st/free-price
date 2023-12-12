@@ -4,8 +4,9 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
-import tshine73.freedom.core.{Location, PriceEntity, ProductPriceEntity, Units}
-import tshine73.freedom.crawler.FinancialCrawler
+import tshine73.freedom.market.entity.{Location, ProductPriceEntity, Units}
+import tshine73.freedom.stock.core.StockPriceCore
+import tshine73.freedom.stock.entity.PriceEntity
 import tshine73.freedom.utils.DateUtils
 import tshine73.freedom.utils.DateUtils.*
 import tshine73.freedom.utils.aws.DynamoDBUtils

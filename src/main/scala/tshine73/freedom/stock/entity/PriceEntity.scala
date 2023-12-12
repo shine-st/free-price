@@ -1,8 +1,8 @@
-package tshine73.freedom.core
+package tshine73.freedom.stock.entity
 
 import org.joda.time.DateTime
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue
-import tshine73.freedom.utils.DateUtils
+import tshine73.freedom.utils.{DateUtils, GoogleSheetUtils}
 
 case class PriceEntity(code: String, date: DateTime, price: Double, range: String = "") {
   override def toString: String = {
@@ -13,7 +13,7 @@ case class PriceEntity(code: String, date: DateTime, price: Double, range: Strin
 object PriceEntity {
   val tableName = "price"
 
-  def generateDynamodbItem(priceEntity: PriceEntity) = {
+  def generateDynamodbItem(priceEntity: PriceEntity) =
     val itemValues = collection.mutable.Map.empty[String, AttributeValue]
 
     itemValues.put("code", AttributeValue.builder().s(priceEntity.code).build())
@@ -21,5 +21,6 @@ object PriceEntity {
     itemValues.put("price", AttributeValue.builder().n(priceEntity.price.toString).build())
 
     itemValues.toMap
-  }
+
+
 }

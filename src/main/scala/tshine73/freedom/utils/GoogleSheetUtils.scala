@@ -58,7 +58,7 @@ object GoogleSheetUtils {
   }
 
 
-  def getValues(spreadsheetId: String, range: String) = {
+  def getValues(spreadsheetId: String, range: String): ValueRange =
     var result: ValueRange = null
 
     try {
@@ -80,7 +80,6 @@ object GoogleSheetUtils {
     }
 
     result
-  }
 
   def updateValue(spreadsheetId: String, range: String, value: AnyVal) = {
     var result: UpdateValuesResponse = null
