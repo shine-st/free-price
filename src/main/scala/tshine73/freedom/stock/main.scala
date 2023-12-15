@@ -11,26 +11,25 @@ import scala.util.Try
 val tableName = "price"
 @main
 def main(parameters: String*): Unit =
-  //  fetchPrices(date)
   val date = parameters match
     case head :: _ => DateUtils.parseDate(head)
     case Nil => DateTime.now().minusDays(1).withMillisOfDay(0)
 
 
-  val priceEntities = IOUtils.readFile("stocks")
-    .map(_.split(","))
+  val priceEntities = StockPriceCore.prepareStockCode()
     .map(codeInfoArr =>
-      val code = codeInfoArr(0)
+      val code = codeInfoArr._1
       val priceEither = Try(StockPriceCore.fetchPrice(code, date)).toEither
-      val priceEntity = PriceEntity(code, date, priceEither.getOrElse(-1), codeInfoArr(1))
+      val priceEntity = PriceEntity(code, date, priceEither.getOrElse(-1), codeInfoArr._2)
       println(priceEntity)
       priceEntity
     )
 
-  priceEntities.foreach(priceEntity => {
-    save(priceEntity)
-    writeSheet(priceEntity)
-  })
+  priceEntities.filter(_.price != -1)
+    .foreach(priceEntity => {
+      save(priceEntity)
+      writeSheet(priceEntity)
+    })
 
 
 def save(priceEntity: PriceEntity) =

@@ -51,7 +51,7 @@ object StockPriceCore:
       .getValues.asScala.map(_.asScala)
 
     rangeValues.zip(2 to rangeValues.size + 1)
-      .map((value, index) => (value.head.toString, "C" + index))
+      .map((value, index) => (value.head.toString, s"Price!C$index"))
 
 
 
