@@ -25,8 +25,11 @@ def main(parameters: String*): Unit =
       priceEntity
     )
 
+  println("saving data")
+
   priceEntities.filter(_.price != -1)
     .foreach(priceEntity => {
+      println(f"saving ${priceEntity.code} ${priceEntity.price} at ${priceEntity.date}")
       save(priceEntity)
       writeSheet(priceEntity)
     })

@@ -91,7 +91,7 @@ object GoogleSheetUtils {
       result = service.spreadsheets().values().update(spreadsheetId, range, body)
         .setValueInputOption("RAW")
         .execute()
-      println(f"${result.getUpdatedCells()} cells updated.")
+      println(f"google sheet range [$range] with value [$value] ${result.getUpdatedCells()} cells updated.")
     } catch {
       case e: GoogleJsonResponseException =>
         throw e
