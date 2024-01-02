@@ -10,6 +10,8 @@ class DateUtilsTest extends AnyFunSuite {
   
   test("timestamp to date string") {
     assert("2022-11-01" == timestampToDate(1667260800).toString(dateFormat))
+
+    assert("2022-10-31" == timestampToDate(1667260800, "EST").toString(dateFormat))
   }
 
 

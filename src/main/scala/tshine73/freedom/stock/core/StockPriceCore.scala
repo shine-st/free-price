@@ -35,14 +35,15 @@ object StockPriceCore:
         -1.0
     }
 
-  def parseYahooJson(jsonStr: String) =
+  def parseYahooJson(jsonStr: String): Map[String, Double] =
     val json = Json.parse(jsonStr)
 
     val resultMap = json \ "chart" \ "result" \ 0
     val timestamps = (resultMap \ "timestamp").as[Seq[Int]]
     val prices = (resultMap \ "indicators" \ "quote" \ 0 \ "close").as[Seq[Double]]
 
-    timestamps.map(timestamp => DateUtils.timestampToDate(timestamp).toString(DateUtils.dateFormat))
+    val timezone = (resultMap \ "meta" \ "exchangeTimezoneName").as[String]
+    timestamps.map(timestamp => DateUtils.timestampToDate(timestamp, timezone).toString(DateUtils.dateFormat))
       .zip(prices)
       .toMap
 
