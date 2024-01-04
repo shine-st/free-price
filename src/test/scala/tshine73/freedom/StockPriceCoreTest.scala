@@ -4,14 +4,46 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should
 import tshine73.freedom.stock.core.StockPriceCore
+import tshine73.freedom.utils.DateUtils
 import tshine73.freedom.utils.DateUtils.*
 
 class StockPriceCoreTest extends AnyFunSuite {
+  val code = "2330.TW"
 
   test("crawl TSMC price on 2022-11-01") {
     val date = parseDate("2022-11-01")
-    assert(391.5 == StockPriceCore.fetchPrice("2330.TW", date))
+    assert(StockPriceCore.fetchPrice(code, date) == 391.5)
   }
+
+  test("generate yahoo financial url") {
+    val urlWithoutDate: String = StockPriceCore.getYahooAPI(code)
+    assert(!urlWithoutDate.contains("period"))
+
+    val startDate = parseDate("2022-11-01")
+    val endDate = parseDate("2022-11-02")
+
+    val urlWithDate: String = StockPriceCore.getYahooAPI(code, Some(startDate), Some(endDate))
+    assert(urlWithDate.contains("period"))
+
+    var period1Index = urlWithDate.indexOf("period1")
+    var startTimestamp = urlWithDate.slice(period1Index + 8, period1Index + 8 + 10)
+    assert(startTimestamp == DateUtils.dateToTimestamp(startDate).toString)
+
+    var period2Index = urlWithDate.indexOf("period2")
+    var endTimestamp = urlWithDate.slice(period2Index + 8, period2Index + 8 + 10)
+    assert(endTimestamp == DateUtils.dateToTimestamp(endDate).toString)
+
+
+    val urlWithStartDate: String = StockPriceCore.getYahooAPI(code, Some(startDate))
+    period1Index = urlWithStartDate.indexOf("period1")
+    startTimestamp = urlWithStartDate.slice(period1Index + 8, period1Index + 8 + 10)
+
+    period2Index = urlWithStartDate.indexOf("period2")
+    endTimestamp = urlWithStartDate.slice(period2Index + 8, period2Index + 8 + 10)
+    assert(startTimestamp == DateUtils.dateToTimestamp(startDate).toString)
+    assert(endTimestamp == DateUtils.dateToTimestamp(startDate.plusDays(1)).toString)
+  }
+
 
   test("parse yahoo api response") {
     val json =

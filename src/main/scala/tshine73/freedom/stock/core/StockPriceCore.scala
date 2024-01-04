@@ -11,15 +11,16 @@ import scala.language.implicitConversions
 
 
 object StockPriceCore:
-  private val yahooApi = "https://query1.finance.yahoo.com/v8/finance/chart/%s?period1=%d&period2=%d&interval=1d&events=history"
   val assetSpreadsheetId = "1H1-OcOoDI9CRkOit1RoOaAE5WJ_HVVOT7jP7fMG50mU"
+  //  val yahooApi = "https://query1.finance.yahoo.com/v8/finance/chart/%s?period1=%d&period2=%d&interval=1d&events=history"
 
   def fetchPrice(code: String, date: DateTime): Double =
     val dateStr = date.toString(DateUtils.dateFormat)
     val backend = HttpClientSyncBackend()
-    val start = DateUtils.dateToTimestamp(date)
-    val end = start + (3600 * 24)
-    val url = yahooApi.format(code, start, end)
+    //    val start = DateUtils.dateToTimestamp(date)
+    //    val end = start + (3600 * 24)
+    //    val url = yahooApi.format(code, start, end)
+    val url = getYahooAPI(code, Some(date))
     println(f"url: $url")
 
     val response = basicRequest.header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:104.0) Gecko/20100101 Firefox/104.0")
@@ -34,6 +35,23 @@ object StockPriceCore:
       case Left(message) => println(f"fetch price error: $message")
         -1.0
     }
+
+  def getYahooAPI(code: String, start: Option[DateTime] = None, end: Option[DateTime] = None) =
+    val api = f"https://query1.finance.yahoo.com/v8/finance/chart/$code?interval=1d&events=history"
+
+    if start.isDefined then
+      val startTimestamp = DateUtils.dateToTimestamp(start.get)
+
+      var endTimestamp = 0L
+      if end.isDefined then
+        endTimestamp = DateUtils.dateToTimestamp(end.get)
+      else
+        endTimestamp = startTimestamp + (3600 * 24)
+
+      f"$api&period1=$startTimestamp&period2=$endTimestamp"
+    else
+      api
+
 
   def parseYahooJson(jsonStr: String): Map[String, Double] =
     val json = Json.parse(jsonStr)
